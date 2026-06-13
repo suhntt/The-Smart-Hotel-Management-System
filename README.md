@@ -49,9 +49,6 @@ A comprehensive, production-ready hotel booking and property management system. 
    ```
 
 ## 👨‍💻 Admin Access
-- The default admin dashboard can be accessed by navigating to `/login`.
-- **Username**: `admin`
-- **Password**: `3Q@1JJMy7lE7` (Configured via `update_pass.py`)
-
+-
 ## 📄 License
 This project was built for academic purposes as part of a B.Tech curriculum.
