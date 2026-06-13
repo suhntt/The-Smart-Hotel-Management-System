@@ -1,0 +1,219 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Admin Dashboard - GrandStay Staff{% endblock %}
+{% block section_title %}Staff Dashboard & Analytics{% endblock %}
+
+{% block admin_content %}
+<!-- Metrics cards grid -->
+<div class="row g-3 mb-4">
+    <!-- Revenue -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="widget-card">
+            <div>
+                <span class="text-secondary small d-block text-uppercase fw-bold">Total Revenue</span>
+                <h4 class="fw-bold mb-0 text-slate-800">₹{{ "{:,.2f}".format(total_revenue) }}</h4>
+            </div>
+            <div class="widget-icon blue">
+                <i class="fas fa-indian-rupee-sign"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Customers -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="widget-card">
+            <div>
+                <span class="text-secondary small d-block text-uppercase fw-bold">Total Customers</span>
+                <h4 class="fw-bold mb-0 text-slate-800">{{ total_customers }} Registered</h4>
+            </div>
+            <div class="widget-icon green">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Occupancy -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="widget-card">
+            <div>
+                <span class="text-secondary small d-block text-uppercase fw-bold">Room Occupancy</span>
+                <h4 class="fw-bold mb-0 text-slate-800">{{ occupancy_rate }}% Active</h4>
+            </div>
+            <div class="widget-icon orange">
+                <i class="fas fa-door-open"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Verifications -->
+    <div class="col-lg-3 col-sm-6">
+        <div class="widget-card">
+            <div>
+                <span class="text-secondary small d-block text-uppercase fw-bold">Pending Verify</span>
+                <h4 class="fw-bold mb-0 text-slate-800">{{ pending_verifications }} Bookings</h4>
+            </div>
+            <div class="widget-icon red">
+                <i class="fas fa-user-clock"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Today's Operations Stats cards -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3 bg-white d-flex flex-row align-items-center justify-content-between">
+            <div>
+                <h6 class="fw-bold text-muted mb-1">TODAY'S RESERVED CHECK-INS</h6>
+                <h3 class="fw-extrabold text-primary mb-0">{{ today_bookings }} Rooms</h3>
+            </div>
+            <div class="fs-1 text-primary opacity-50"><i class="fas fa-calendar-day"></i></div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3 bg-white d-flex flex-row align-items-center justify-content-between">
+            <div>
+                <h6 class="fw-bold text-muted mb-1">TODAY'S VERIFIED CHECK-INS</h6>
+                <h3 class="fw-extrabold text-success mb-0">{{ today_checkins }} Verified</h3>
+            </div>
+            <div class="fs-1 text-success opacity-50"><i class="fas fa-clipboard-check"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row g-4 mb-4">
+    <!-- Monthly Revenue Bar Chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 bg-white">
+            <h5 class="fw-bold mb-3">Revenue Performance Analytics</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="chart-revenue"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Room Occupancy Pie Chart -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 bg-white">
+            <h5 class="fw-bold mb-3">Occupancy by Category</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="chart-occupancy"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Booking Trends Line Chart -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4 bg-white">
+            <h5 class="fw-bold mb-3">Monthly Bookings Volume</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="chart-trends"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Food Sales Polar Chart -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4 bg-white">
+            <h5 class="fw-bold mb-3">Restaurant Sales by Category</h5>
+            <div style="height: 250px; position: relative;">
+                <canvas id="chart-food"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Actions Tables Grid -->
+<div class="row g-4">
+    <!-- Recent Bookings -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Recent Room Bookings</h5>
+                <a href="{{ url_for('admin_manage_bookings') }}" class="small text-decoration-none">View All</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="table-light small">
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Dates</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in recent_bookings %}
+                            <tr class="small">
+                                <td>#{{ booking.id }}</td>
+                                <td>
+                                    <strong>{{ booking.user.name }}</strong>
+                                    <span class="d-block text-muted" style="font-size: 0.75rem;">Room: {{ booking.room.category }}</span>
+                                </td>
+                                <td>{{ booking.check_in_date }}</td>
+                                <td>
+                                    {% if booking.status == 'Checked-in' %}
+                                        <span class="badge bg-success">Checked In</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark border">{{ booking.status }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Food Orders -->
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm p-4 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Recent Food Orders</h5>
+                <a href="{{ url_for('admin_food_orders') }}" class="small text-decoration-none">View All</a>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="table-light small">
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Items Summary</th>
+                            <th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_food_orders %}
+                            <tr class="small">
+                                <td>#{{ order.id }}</td>
+                                <td><strong>{{ order.user.name }}</strong></td>
+                                <td>
+                                    {% for item in order.items_json|from_json %}
+                                        <span class="badge bg-light text-dark">{{ item.name }} x{{ item.qty }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <span class="badge {% if order.delivery_status == 'Delivered' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                        {{ order.delivery_status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Include our dynamic chart loaders -->
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

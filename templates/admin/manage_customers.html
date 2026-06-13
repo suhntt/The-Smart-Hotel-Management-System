@@ -1,0 +1,43 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Manage Customers - GrandStay Staff{% endblock %}
+{% block section_title %}Customer Accounts Directory{% endblock %}
+
+{% block admin_content %}
+<div class="card border-0 shadow-sm p-4 bg-white">
+    <h5 class="fw-bold mb-4">Registered Customers</h5>
+    
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr class="table-light small">
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                    <th>Email Verified</th>
+                    <th>Created At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                    <tr class="small">
+                        <td>#{{ customer.id }}</td>
+                        <td><strong>{{ customer.name }}</strong></td>
+                        <td>{{ customer.email }}</td>
+                        <td>+91 {{ customer.phone }}</td>
+                        <td>
+                            {% if customer.is_verified %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Verified</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Unverified</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ customer.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

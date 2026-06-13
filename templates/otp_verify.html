@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Account - GrandStay{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="auth-container text-center">
+        <div class="fs-1 text-primary mb-3">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h4 class="fw-bold mb-1">Verify Your Email</h4>
+        <p class="text-secondary small mb-4">We have sent a verification code to <strong>{{ email }}</strong></p>
+        
+        <form action="{{ url_for('otp_verify') }}" method="POST">
+            <div class="mb-4">
+                <label for="otp" class="form-label small fw-bold text-uppercase d-block mb-3">Enter 6-Digit One Time Password</label>
+                <input type="text" class="form-control form-control-lg text-center letter-spacing-lg fw-bold" 
+                       id="otp" name="otp" placeholder="0 0 0 0 0 0" maxlength="6" pattern="\d{6}" required autofocus>
+            </div>
+            
+            <button type="submit" class="btn btn-primary-custom w-100 py-2.5 mb-3">
+                Verify & Log In
+            </button>
+        </form>
+        
+        <div class="card bg-light border-0 p-3 mt-4 text-start">
+            <div class="d-flex">
+                <i class="fas fa-info-circle text-info mt-1 me-2"></i>
+                <div class="small text-secondary">
+                    <strong>Developer/Demo Note:</strong> Since you might not have set up real SMTP credentials in your environment variables, the system has printed the generated OTP to the **server console/terminal logs**. Open your terminal to read it!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.letter-spacing-lg {
+    letter-spacing: 0.5rem;
+    font-size: 1.8rem;
+}
+</style>
+{% endblock %}

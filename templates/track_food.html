@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Track Food Order - GrandStay{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm rounded-4 p-5 bg-white">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                    <div>
+                        <h4 class="fw-bold mb-1"><i class="fas fa-motorcycle text-primary me-2"></i>Track Food Order</h4>
+                        <span class="text-secondary small">Order ID Reference: #{{ order.id }}</span>
+                    </div>
+                    <span class="badge bg-primary px-3 py-2">
+                        Status: {{ order.delivery_status }}
+                    </span>
+                </div>
+                
+                <!-- Horizontal stepper representation -->
+                <div class="row text-center mb-5 mt-4">
+                    
+                    <!-- Step 1: Ordered -->
+                    <div class="col-3">
+                        <div class="fs-3 mb-2 text-success"><i class="fas fa-check-circle"></i></div>
+                        <strong class="small d-block">Order Confirmed</strong>
+                        <span class="text-muted small" style="font-size: 0.75rem;">Received by Kitchen</span>
+                    </div>
+                    
+                    <!-- Step 2: Cooking -->
+                    <div class="col-3">
+                        <div class="fs-3 mb-2 {% if order.delivery_status in ['Cooking', 'Out for Delivery', 'Delivered'] %}text-success{% else %}text-muted opacity-50{% endif %}">
+                            <i class="fas {% if order.delivery_status == 'Cooking' %}fa-fire-alt animate-pulse{% else %}fa-check-circle{% endif %}"></i>
+                        </div>
+                        <strong class="small d-block">Cooking</strong>
+                        <span class="text-muted small" style="font-size: 0.75rem;">Chef is preparing</span>
+                    </div>
+                    
+                    <!-- Step 3: Out for Delivery -->
+                    <div class="col-3">
+                        <div class="fs-3 mb-2 {% if order.delivery_status in ['Out for Delivery', 'Delivered'] %}text-success{% else %}text-muted opacity-50{% endif %}">
+                            <i class="fas {% if order.delivery_status == 'Out for Delivery' %}fa-shipping-fast animate-bounce{% else %}fa-check-circle{% endif %}"></i>
+                        </div>
+                        <strong class="small d-block">In Transit</strong>
+                        <span class="text-muted small" style="font-size: 0.75rem;">Heading to your room</span>
+                    </div>
+                    
+                    <!-- Step 4: Delivered -->
+                    <div class="col-3">
+                        <div class="fs-3 mb-2 {% if order.delivery_status == 'Delivered' %}text-success{% else %}text-muted opacity-50{% endif %}">
+                            <i class="fas fa-door-open"></i>
+                        </div>
+                        <strong class="small d-block">Delivered</strong>
+                        <span class="text-muted small" style="font-size: 0.75rem;">Enjoy your meal!</span>
+                    </div>
+                    
+                </div>
+                
+                <!-- Order summary card -->
+                <h6 class="fw-bold mb-3">Ordered Items:</h6>
+                <div class="card bg-light border-0 p-4 mb-4 rounded-3 small">
+                    {% for item in order.items_json|from_json %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{{ item.name }} <strong>(x{{ item.qty }})</strong></span>
+                            <strong>₹{{ "{:,.2f}".format(item.price * item.qty) }}</strong>
+                        </div>
+                    {% endfor %}
+                    <hr class="my-2 border-secondary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Total Paid:</span>
+                        <strong class="fs-5 text-primary">₹{{ "{:,.2f}".format(order.total_amount) }}</strong>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary-custom">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                    </a>
+                    
+                    <button onclick="window.location.reload()" class="btn btn-primary-custom">
+                        <i class="fas fa-sync me-1"></i>Refresh Status
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.1); }
+}
+.animate-pulse {
+    animation: pulse 1.5s infinite ease-in-out;
+}
+</style>
+{% endblock %}

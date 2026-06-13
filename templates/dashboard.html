@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}My Dashboard - GrandStay{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row g-4">
+        
+        <!-- Sidebar Profile Column -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <div class="text-center mb-4">
+                    <div class="fs-1 text-primary mb-2"><i class="fas fa-user-circle"></i></div>
+                    <h5 class="fw-bold mb-0">{{ current_user.name }}</h5>
+                    <span class="text-muted small">Registered Customer</span>
+                </div>
+                
+                <h6 class="fw-bold mb-3">Update Profile</h6>
+                <form action="{{ url_for('update_profile') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="profile-name" class="form-label small fw-bold text-muted">Full Name</label>
+                        <input type="text" class="form-control bg-light" id="profile-name" name="name" value="{{ current_user.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile-phone" class="form-label small fw-bold text-muted">Phone Number</label>
+                        <input type="tel" class="form-control bg-light" id="profile-phone" name="phone" value="{{ current_user.phone }}" pattern="[6-9][0-9]{9}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="profile-email" class="form-label small fw-bold text-muted">Email Address (Read-only)</label>
+                        <input type="email" class="form-control bg-light" id="profile-email" value="{{ current_user.email }}" readonly>
+                    </div>
+                    <div class="mb-4">
+                        <label for="profile-password" class="form-label small fw-bold text-muted">Change Password (Optional)</label>
+                        <input type="password" class="form-control bg-light" id="profile-password" name="password" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100">
+                        Save Changes
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Dashboard Logs Tabs Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white min-h-500">
+                
+                <ul class="nav nav-pills mb-4" id="dashboardTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold me-2" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings-pane" type="button" role="tab">
+                            <i class="fas fa-bed me-1.5"></i>My Bookings
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold me-2" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders-pane" type="button" role="tab">
+                            <i class="fas fa-utensils me-1.5"></i>Food Orders
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments-pane" type="button" role="tab">
+                            <i class="fas fa-receipt me-1.5"></i>Payments History
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content" id="dashboardTabsContent">
+                    
+                    <!-- 1. Bookings Tab -->
+                    <div class="tab-pane fade show active" id="bookings-pane" role="tabpanel">
+                        <h5 class="fw-bold mb-3">Room Booking Logs</h5>
+                        
+                        {% if not bookings %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-hotel fa-2x text-muted mb-2"></i>
+                                <p class="text-muted small">You haven't reserved any rooms yet.</p>
+                                <a href="{{ url_for('index') }}" class="btn btn-primary-custom btn-sm mt-2">Book a Room</a>
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr class="table-light small">
+                                            <th>ID</th>
+                                            <th>Room Category</th>
+                                            <th>Dates</th>
+                                            <th>Aadhaar Status</th>
+                                            <th>Check-In Status</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for booking in bookings %}
+                                            <tr class="small">
+                                                <td>#{{ booking.id }}</td>
+                                                <td>
+                                                    <strong>{{ booking.room.category }}</strong>
+                                                    <span class="d-block text-muted" style="font-size: 0.75rem;">₹{{ "{:,.0f}".format(booking.room.price_per_night) }}/night</span>
+                                                </td>
+                                                <td>
+                                                    <span class="d-block">In: {{ booking.check_in_date }}</span>
+                                                    <span class="d-block">Out: {{ booking.check_out_date }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if booking.aadhaar_record.verification_status == 'Verified' %}
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Verified</span>
+                                                    {% elif booking.aadhaar_record.verification_status == 'Failed' %}
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Failed</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">Pending</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if booking.status == 'Checked-in' %}
+                                                        <span class="badge bg-success px-2 py-1"><i class="fas fa-door-open me-1"></i>Checked In</span>
+                                                    {% elif booking.status == 'Checked-out' %}
+                                                        <span class="badge bg-secondary px-2 py-1">Checked Out</span>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-slate-800 border px-2 py-1">Booked</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    {% if booking.payment_status == 'Paid' %}
+                                                        {% if booking.status == 'Checked-in' %}
+                                                            <a href="{{ url_for('checkin_pass', booking_id=booking.id) }}" class="btn btn-sm btn-dark fw-bold mb-1 d-block text-center">
+                                                                <i class="fas fa-qrcode me-1"></i>Pass
+                                                            </a>
+                                                        {% endif %}
+                                                        {% if booking.payments %}
+                                                        <a href="{{ url_for('download_invoice', payment_id=booking.payments[0].id) }}" class="btn btn-sm btn-outline-secondary mb-1 d-block text-center">
+                                                            <i class="fas fa-download me-1"></i>Receipt
+                                                        </a>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <a href="{{ url_for('checkout', service_type='RoomBooking', item_id=booking.id) }}" class="btn btn-sm btn-primary-custom mb-1 d-block text-center">
+                                                            Pay Now
+                                                        </a>
+                                                    {% endif %}
+                                                </td>
+
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 2. Food Orders Tab -->
+                    <div class="tab-pane fade" id="orders-pane" role="tabpanel">
+                        <h5 class="fw-bold mb-3">Restaurant Orders</h5>
+                        
+                        {% if not food_orders %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-utensils fa-2x text-muted mb-2"></i>
+                                <p class="text-muted small">You haven't ordered any food yet.</p>
+                                <a href="{{ url_for('food_menu') }}" class="btn btn-primary-custom btn-sm mt-2">Order Food</a>
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr class="table-light small">
+                                            <th>ID</th>
+                                            <th>Items Summary</th>
+                                            <th>Total Paid</th>
+                                            <th>Delivery Status</th>
+                                            <th class="text-end">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in food_orders %}
+                                            <tr class="small">
+                                                <td>#{{ order.id }}</td>
+                                                <td>
+                                                    {% for item in order.items_json|from_json %}
+                                                        <span class="d-block">• {{ item.name }} (x{{ item.qty }})</span>
+                                                    {% endfor %}
+                                                </td>
+                                                <td>
+                                                    <strong>₹{{ "{:,.2f}".format(order.total_amount) }}</strong>
+                                                    <span class="d-block text-muted" style="font-size: 0.75rem;">Status: {{ order.payment_status }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if order.delivery_status == 'Delivered' %}
+                                                        <span class="badge bg-success">Delivered</span>
+                                                    {% elif order.delivery_status == 'Out for Delivery' %}
+                                                        <span class="badge bg-info text-white">Out for Delivery</span>
+                                                    {% elif order.delivery_status == 'Cooking' %}
+                                                        <span class="badge bg-warning text-dark">Cooking</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary">Ordered</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="text-end">
+                                                    {% if order.payment_status == 'Paid' %}
+                                                        <a href="{{ url_for('track_food_order', order_id=order.id) }}" class="btn btn-sm btn-outline-primary mb-1">
+                                                            <i class="fas fa-map-marker-alt me-1"></i>Track
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{{ url_for('checkout', service_type='FoodOrder', item_id=order.id) }}" class="btn btn-sm btn-primary-custom mb-1">
+                                                            Pay
+                                                        </a>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 3. Payments Tab -->
+                    <div class="tab-pane fade" id="payments-pane" role="tabpanel">
+                        <h5 class="fw-bold mb-3">Transaction History</h5>
+                        
+                        {% if not payments %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-file-invoice-dollar fa-2x text-muted mb-2"></i>
+                                <p class="text-muted small">No payment logs recorded.</p>
+                            </div>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead>
+                                        <tr class="table-light small">
+                                            <th>ID</th>
+                                            <th>Service Type</th>
+                                            <th>Razorpay Details</th>
+                                            <th>Amount</th>
+                                            <th>Date</th>
+                                            <th class="text-end">Invoice</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for payment in payments %}
+                                            <tr class="small">
+                                                <td>#{{ payment.id }}</td>
+                                                <td>
+                                                    <span class="fw-bold">{{ 'Room Booking' if payment.service_type == 'RoomBooking' else 'Food Ordering' }}</span>
+                                                </td>
+                                                <td>
+                                                    <span class="d-block text-muted" style="font-size: 0.75rem;">Order: {{ payment.order_id }}</span>
+                                                    <span class="d-block text-muted" style="font-size: 0.75rem;">Payment: {{ payment.payment_id or 'Pending' }}</span>
+                                                </td>
+                                                <td>
+                                                    <strong class="text-slate-800">₹{{ "{:,.2f}".format(payment.amount) }}</strong>
+                                                    <span class="d-block text-success" style="font-size: 0.75rem;">Captured</span>
+                                                </td>
+                                                <td>{{ payment.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                                                <td class="text-end">
+                                                    {% if payment.status == 'Captured' %}
+                                                        <a href="{{ url_for('download_invoice', payment_id=payment.id) }}" class="btn btn-sm btn-light border">
+                                                            <i class="fas fa-print"></i>
+                                                        </a>
+                                                    {% else %}
+                                                        <span class="text-muted small">Failed</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                </div>
+                
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Check-In Pass - GrandStay{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-4 no-print">
+        <h3 class="fw-bold mb-1">Your Digital Boarding Pass</h3>
+        <p class="text-muted small">Present this pass at the elevator/reception to access your suite keys.</p>
+        <button onclick="window.print()" class="btn btn-primary-custom px-4"><i class="fas fa-print me-2"></i>Print Pass</button>
+    </div>
+    
+    <div class="checkin-pass-card">
+        
+        <div class="checkin-pass-header">
+            <h5 class="fw-bold mb-0 text-white"><i class="fas fa-hotel text-info me-2"></i>GrandStay Hotel</h5>
+            <span class="small text-white-50">Secure Biometric Check-In Verified</span>
+        </div>
+        
+        <div class="checkin-pass-body">
+            
+            <div class="row mb-3">
+                <div class="col-12 text-center mb-3">
+                    <span class="verification-badge badge-verified">
+                        <i class="fas fa-check-circle me-1"></i>Aadhaar Biometric Match Verified
+                    </span>
+                </div>
+                
+                <div class="col-6 mb-3">
+                    <span class="text-muted small d-block">GUEST NAME</span>
+                    <strong class="text-slate-800">{{ booking.user.name }}</strong>
+                </div>
+                
+                <div class="col-6 mb-3 text-end">
+                    <span class="text-muted small d-block">ROOM CATEGORY</span>
+                    <strong class="text-slate-800">{{ booking.room.category }}</strong>
+                </div>
+                
+                <div class="col-6 mb-3">
+                    <span class="text-muted small d-block">CHECK-IN</span>
+                    <strong class="text-slate-800">{{ booking.check_in_date.strftime('%d %b %Y') }}</strong>
+                </div>
+                
+                <div class="col-6 mb-3 text-end">
+                    <span class="text-muted small d-block">CHECK-OUT</span>
+                    <strong class="text-slate-800">{{ booking.check_out_date.strftime('%d %b %Y') }}</strong>
+                </div>
+                
+                <div class="col-6">
+                    <span class="text-muted small d-block">BOOKING REF ID</span>
+                    <strong class="text-slate-800">#GS-{{ booking.id }}</strong>
+                </div>
+                
+                <div class="col-6 text-end">
+                    <span class="text-muted small d-block">TOTAL GUESTS</span>
+                    <strong class="text-slate-800">{{ booking.guests_count }} Person(s)</strong>
+                </div>
+            </div>
+            
+            <!-- Perforation dotted line -->
+            <div class="checkin-pass-separator no-print">
+                <div class="checkin-pass-dotline"></div>
+            </div>
+            
+            <!-- QR code scanner representation -->
+            <div class="checkin-pass-qr-wrapper">
+                <div class="checkin-pass-qr">
+                    <!-- High fidelity QR mock using Font Awesome -->
+                    <i class="fas fa-qrcode fa-6x text-slate-800"></i>
+                </div>
+            </div>
+            
+            <div class="text-center small text-secondary">
+                <span class="d-block mb-1">SCAN QR AT ELEVATOR LOCK</span>
+                <code class="text-dark fw-bold">REF-ID:{{ booking.id }}:ROOM-{{ booking.room.id }}:AADH-{{ booking.aadhaar_record.aadhaar_number[-4:] }}</code>
+            </div>
+            
+        </div>
+        
+    </div>
+</div>
+
+<style>
+@media print {
+    .navbar, footer, .no-print, .btn {
+        display: none !important;
+    }
+    body {
+        background: #fff !important;
+        padding: 0;
+        margin: 0;
+    }
+    .checkin-pass-card {
+        box-shadow: none !important;
+        border: 2px solid #000 !important;
+        margin-top: 2rem !important;
+    }
+}
+</style>
+{% endblock %}

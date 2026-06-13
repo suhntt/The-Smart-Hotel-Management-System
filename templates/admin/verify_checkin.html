@@ -1,0 +1,189 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Smart Check-In Scanner - GrandStay Staff{% endblock %}
+{% block section_title %}Biometric & Aadhaar Check-In System{% endblock %}
+
+{% block admin_content %}
+<div class="row g-4">
+    
+    <!-- 1. Search Booking Section (Always visible) -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm p-4 bg-white">
+            <h5 class="fw-bold mb-3"><i class="fas fa-search me-2 text-primary"></i>Find Customer Booking</h5>
+            <form action="{{ url_for('admin_verify_search_booking') }}" method="POST" class="row g-3 align-items-center">
+                <div class="col-md-9 col-sm-8">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="fas fa-barcode text-muted"></i></span>
+                        <input type="text" class="form-control" name="query" placeholder="Enter Booking ID (e.g. 1) or 12-Digit Aadhaar Number (e.g. 543210987654)" required>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-4">
+                    <button type="submit" class="btn btn-primary-custom w-100 py-2.5">
+                        <i class="fas fa-search me-1"></i>Search Booking
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if not booking %}
+        <!-- No Booking Selected Alert -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm p-4 bg-white">
+                <h5 class="fw-bold mb-3 border-bottom pb-2">Pending Check-Ins</h5>
+                {% if pending_bookings %}
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover">
+                            <thead>
+                                <tr class="table-light small">
+                                    <th>Booking ID</th>
+                                    <th>Guest Name</th>
+                                    <th>Aadhaar Registered</th>
+                                    <th>Room</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pb in pending_bookings %}
+                                <tr>
+                                    <td><strong>#{{ pb.id }}</strong></td>
+                                    <td>{{ pb.user.name }}</td>
+                                    <td><code>{{ pb.aadhaar_record.aadhaar_number if pb.aadhaar_record else 'N/A' }}</code></td>
+                                    <td>{{ pb.room.category }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('admin_checkin_verify_page', booking_id=pb.id) }}" class="btn btn-sm btn-primary-custom">
+                                            Start Verification <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3 opacity-50"></i>
+                        <h6>All caught up!</h6>
+                        <p class="text-muted small mb-0">There are no pending, paid bookings waiting for check-in right now.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        
+        <!-- 2. Customer Booking details & database records -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 bg-white mb-4">
+                <h5 class="fw-bold mb-3 border-bottom pb-2">Customer Credentials</h5>
+                
+                <div class="small text-secondary mb-3">
+                    <div class="mb-2"><strong>Booking ID:</strong> <span class="badge bg-slate-900 text-light">#{{ booking.id }}</span></div>
+                    <div class="mb-2"><strong>Room Category:</strong> <span class="fw-bold text-dark">{{ booking.room.category }}</span></div>
+                    <div class="mb-2"><strong>Customer Name:</strong> <span class="fw-bold text-dark">{{ booking.user.name }}</span></div>
+                    <div class="mb-2"><strong>Aadhaar Registered:</strong> <code class="text-dark">{{ booking.aadhaar_record.aadhaar_number }}</code></div>
+                    <div class="mb-2"><strong>Phone Number:</strong> +91 {{ booking.user.phone }}</div>
+                    <div class="mb-2"><strong>Dates:</strong> {{ booking.check_in_date }} to {{ booking.check_out_date }}</div>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Database Aadhaar Copy</label>
+                    <div class="border rounded overflow-hidden" style="height: 120px; background-color: #f1f5f9;">
+                        <img src="{{ booking.aadhaar_record.aadhaar_image_path }}" class="w-100 h-100" style="object-fit: cover;" 
+                             onerror="this.src='https://images.unsplash.com/photo-1557683316-973673baf926?w=300';" alt="Aadhaar Card">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="form-label small fw-bold text-muted text-uppercase">Database Photo Upload</label>
+                    <div class="border rounded overflow-hidden" style="height: 120px; background-color: #f1f5f9;">
+                        <img src="{{ booking.aadhaar_record.face_image_path }}" class="w-100 h-100" style="object-fit: cover;" 
+                             onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300';" alt="Face Image">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3. Live Receptionist Webcam feed -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 bg-white">
+                <h5 class="fw-bold mb-3"><i class="fas fa-video me-2 text-primary"></i>Live Camera Feed</h5>
+                
+                <!-- Camera screen container -->
+                <div class="webcam-feed-box mb-4">
+                    <div class="webcam-scanning-line"></div>
+                    <div id="camera-placeholder" class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-white p-4 text-center">
+                        <i class="fas fa-camera fa-3x mb-3 text-secondary"></i>
+                        <button onclick="startCamera()" class="btn btn-outline-light btn-sm">Enable Camera</button>
+                    </div>
+                    <video id="webcam-feed" class="w-100 h-100 d-none" style="object-fit: cover; transform: scaleX(-1);"></video>
+                </div>
+                
+                <!-- Action Controls -->
+                <div class="d-grid gap-2">
+                    <button id="btn-scan-aadhaar" onclick="scanAadhaar({{ booking.id }}, {{ 'true' if SIMULATE_AI else 'false' }})" class="btn btn-dark fw-bold py-2.5">
+                        <i class="fas fa-id-card me-2"></i>Scan Physical Aadhaar
+                    </button>
+                    <button id="btn-match-face" onclick="matchFace({{ booking.id }}, {{ 'true' if SIMULATE_AI else 'false' }})" class="btn btn-primary-custom fw-bold py-2.5">
+                        <i class="fas fa-user-check me-2"></i>Compare Face & Webcam
+                    </button>
+                </div>
+                
+                <!-- Manual Mock File Upload fallback (Visible only when webcam is blocked/missing) -->
+                <div class="camera-fallback-input d-none mt-3 p-3 bg-light rounded border">
+                    <h7 class="fw-bold text-slate-800 d-block mb-2"><i class="fas fa-file-upload text-warning me-1"></i>Webcam Fallback Uploads</h7>
+                    <div class="mb-2">
+                        <label for="aadhaar-file-fallback" class="form-label small text-muted">Aadhaar Card Mock File</label>
+                        <input type="file" id="aadhaar-file-fallback" class="form-control form-control-sm" accept="image/*">
+                    </div>
+                    <div>
+                        <label for="face-file-fallback" class="form-label small text-muted">Live Face Mock File</label>
+                        <input type="file" id="face-file-fallback" class="form-control form-control-sm" accept="image/*">
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- 4. Verification Matching results & logs -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 bg-white" style="min-height: 480px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">Verification Report</h5>
+                    
+                    <!-- OCR Results Output -->
+                    <div id="ocr-results-status" class="mb-4">
+                        <span class="text-muted small"><i class="fas fa-info-circle me-1"></i>Awaiting Aadhaar Card scan...</span>
+                    </div>
+                    
+                    <!-- Face Results Output -->
+                    <div id="face-results-status" class="mb-4">
+                        <span class="text-muted small"><i class="fas fa-info-circle me-1"></i>Awaiting biometric face match check...</span>
+                    </div>
+                </div>
+                
+                <!-- Finalize Checkin Actions (Hidden until both run) -->
+                <div id="final-checkin-card" class="d-none border-top pt-3 mt-3">
+                    <div class="text-center mb-3">
+                        <span id="overall-match-badge" class="badge p-2 fs-6">
+                            Evaluating Matches...
+                        </span>
+                    </div>
+                    <button id="btn-finalize-checkin" onclick="finalizeCheckin({{ booking.id }})" class="btn w-100 fw-bold py-3">
+                        Complete Verification
+                    </button>
+                </div>
+                
+            </div>
+        </div>
+        
+    {% endif %}
+    
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include scanner script controls -->
+<script src="{{ url_for('static', filename='js/camera.js') }}"></script>
+{% endblock %}

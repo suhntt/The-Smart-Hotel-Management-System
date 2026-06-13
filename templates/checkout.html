@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Secure Payment – GrandStay{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="checkout-card shadow-premium">
+
+                <!-- Header -->
+                <div class="checkout-header">
+                    <div class="mb-3" style="width:64px;height:64px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                        <i class="fas fa-shield-alt text-white" style="font-size:1.8rem;"></i>
+                    </div>
+                    <h4 class="fw-800 mb-1">Secure Checkout</h4>
+                    <p class="small mb-0" style="opacity:.7;">Powered by Razorpay · AES-256 Encrypted</p>
+                </div>
+
+                <!-- Body -->
+                <div class="p-4">
+                    <h6 class="fw-700 mb-3">Order Summary</h6>
+                    <div class="p-3 rounded-lg mb-4" style="background:#f8f9fb;border:1px solid var(--border);">
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Description</span>
+                            <strong>{{ description }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Service Type</span>
+                            <strong>{{ service_type }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Reference ID</span>
+                            <strong>#{{ item_id }}</strong>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-700">Total Amount</span>
+                            <span style="font-size:1.6rem;font-weight:800;color:var(--blue);">₹{{ "{:,.2f}".format(amount) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Security Badge -->
+                    <div class="d-flex align-items-center gap-3 p-3 rounded-lg mb-4" style="background:rgba(5,150,105,.05);border:1px solid rgba(5,150,105,.15);">
+                        <i class="fas fa-lock text-success" style="font-size:1.4rem;"></i>
+                        <span class="small text-muted">Your payment is processed securely via bank-level encryption. Card details are never stored.</span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-grid gap-2">
+                        <button id="btn-pay-real" class="btn btn-primary-custom py-3 fw-700">
+                            <i class="fas fa-credit-card me-2"></i>Pay ₹{{ "{:,.0f}".format(amount) }} with Razorpay
+                        </button>
+
+                        {% if RAZORPAY_KEY_ID.startswith('rzp_test_sample') %}
+                        <div class="text-center">
+                            <div class="small text-muted my-2">— or for demo purposes —</div>
+                            <button id="btn-pay-simulate" class="btn w-100 py-3 fw-700" style="background:linear-gradient(135deg,#d97706,#b45309);color:#fff;border:none;border-radius:var(--radius-sm);">
+                                <i class="fas fa-laptop-code me-2"></i>Simulate Payment Success (Demo)
+                            </button>
+                            <p class="small text-muted mt-2 mb-0">
+                                <i class="fas fa-info-circle me-1"></i>Demo mode: Razorpay keys are test placeholders. Use simulate to complete booking flow.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Back Link -->
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('dashboard') }}" class="small text-muted text-decoration-none">
+                            <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const payRealBtn = document.getElementById('btn-pay-real');
+    const paySimBtn  = document.getElementById('btn-pay-simulate');
+
+    const keyId      = "{{ RAZORPAY_KEY_ID }}";
+    const orderId    = "{{ order_id }}";
+    const amount     = {{ amount }};
+    const serviceType = "{{ service_type }}";
+    const itemId     = {{ item_id }};
+
+    const options = {
+        "key": keyId,
+        "amount": amount * 100,
+        "currency": "INR",
+        "name": "GrandStay Hotel",
+        "description": "{{ description }}",
+        "order_id": orderId,
+        "handler": function (response) {
+            submitPaymentStatus(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+        },
+        "prefill": {
+            "name": "{{ customer_name }}",
+            "email": "{{ customer_email }}",
+            "contact": "{{ customer_phone }}"
+        },
+        "theme": { "color": "#1a1a2e" }
+    };
+
+    if (payRealBtn) {
+        payRealBtn.addEventListener('click', function () {
+            if (keyId.startsWith('rzp_test_sample')) {
+                showToast("Demo mode active. Use the 'Simulate Payment' button below.", 'warning');
+                return;
+            }
+            new Razorpay(options).open();
+        });
+    }
+
+    if (paySimBtn) {
+        paySimBtn.addEventListener('click', function () {
+            paySimBtn.disabled = true;
+            paySimBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing…';
+            const mockPayId  = 'pay_demo_' + Math.random().toString(36).substr(2,9);
+            const mockSig    = 'sig_demo_' + Math.random().toString(36).substr(2,12);
+            submitPaymentStatus(orderId, mockPayId, mockSig);
+        });
+    }
+
+    function submitPaymentStatus(order_id, payment_id, signature) {
+        fetch('/payment/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                service_type: serviceType,
+                item_id: itemId,
+                razorpay_order_id: order_id,
+                razorpay_payment_id: payment_id,
+                razorpay_signature: signature
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            const status = d.success ? 'success' : 'failure';
+            window.location.href = `/payment/status?status=${status}&service_type=${serviceType}&item_id=${itemId}`;
+        })
+        .catch(() => {
+            window.location.href = `/payment/status?status=failure&service_type=${serviceType}&item_id=${itemId}`;
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}Smart Hotel System - Home{% endblock %}
+
+{% block content %}
+<!-- =================== HERO =================== -->
+<section class="hero-section">
+    <div class="container text-center position-relative" style="z-index:2;">
+        <div class="hero-badge animate-fade-in">
+            <i class="fas fa-graduation-cap"></i> B.Tech 6th Semester Mini Project
+        </div>
+        <h1 class="hero-title animate-fade-in-delay-1">
+            Smart Hotel<br><span class="highlight">Booking System</span>
+        </h1>
+        <p class="hero-sub animate-fade-in-delay-2">
+            A comprehensive web application featuring automated room assignment, online food ordering, and secure Aadhaar-based identity verification.
+        </p>
+        <div class="hero-feature-pills animate-fade-in-delay-2">
+            <span class="hero-pill"><i class="fas fa-bed"></i> Room Booking</span>
+            <span class="hero-pill"><i class="fas fa-credit-card"></i> Payment Gateway</span>
+            <span class="hero-pill"><i class="fas fa-shield-alt"></i> ID Verification</span>
+            <span class="hero-pill"><i class="fas fa-utensils"></i> Food Menu</span>
+        </div>
+        <div class="hero-stats animate-fade-in-delay-3">
+            <div>
+                <span class="hero-stat-value">Flask</span>
+                <span class="hero-stat-label">Backend</span>
+            </div>
+            <div>
+                <span class="hero-stat-value">SQLite</span>
+                <span class="hero-stat-label">Database</span>
+            </div>
+            <div>
+                <span class="hero-stat-value">Python</span>
+                <span class="hero-stat-label">Face & OCR</span>
+            </div>
+            <div>
+                <span class="hero-stat-value">API</span>
+                <span class="hero-stat-label">Razorpay</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =================== SEARCH WIDGET =================== -->
+<section class="container mb-5">
+    <div class="section-title text-center animate-fade-in">
+        <h2>How The System Works</h2>
+        <div class="divider"></div>
+        <p class="text-muted">A step-by-step overview of the booking and check-in workflow implemented in this project.</p>
+    </div>
+    <div class="search-widget animate-fade-in">
+        <div class="row g-2 mb-3">
+            <div class="col-12">
+                <p class="fw-700 mb-0" style="font-size:.95rem; color:var(--text);">
+                    <i class="fas fa-search text-primary me-2"></i>Search Available Rooms
+                </p>
+            </div>
+        </div>
+        <form action="{{ url_for('search_rooms') }}" method="GET" class="row g-3 align-items-end">
+            <div class="col-lg-3 col-md-6">
+                <label for="check_in" class="form-label">Check-In Date</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="far fa-calendar-alt text-muted"></i></span>
+                    <input type="date" class="form-control border-start-0 ps-0" id="check_in" name="check_in"
+                           value="{{ check_in or '' }}" required
+                           min="{{ today.strftime('%Y-%m-%d') }}">
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <label for="check_out" class="form-label">Check-Out Date</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="far fa-calendar-alt text-muted"></i></span>
+                    <input type="date" class="form-control border-start-0 ps-0" id="check_out" name="check_out"
+                           value="{{ check_out or '' }}" required>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label for="guests" class="form-label">Guests</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-users text-muted"></i></span>
+                    <select class="form-select border-start-0 ps-0" id="guests" name="guests">
+                        <option value="1" {% if guests == 1 %}selected{% endif %}>1 Guest</option>
+                        <option value="2" {% if guests == 2 or not guests %}selected{% endif %}>2 Guests</option>
+                        <option value="3" {% if guests == 3 %}selected{% endif %}>3 Guests</option>
+                        <option value="4" {% if guests == 4 %}selected{% endif %}>4 Guests</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-8">
+                <button type="submit" class="btn-search w-100 py-3 fw-700" style="background:linear-gradient(135deg,#2563eb,#1e40af);color:#fff;border:none;border-radius:10px;font-size:.95rem;transition:all .28s;">
+                    <i class="fas fa-search me-2"></i>Find Available Rooms
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- =================== ROOMS GRID =================== -->
+<section class="container mb-6 pb-4">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <p class="section-label mb-1">Our Collection</p>
+            <h2 class="section-title mb-0">Premium Accommodations</h2>
+        </div>
+        {% if check_in and check_out %}
+            <span class="badge rounded-pill px-3 py-2" style="background:rgba(37,99,235,.08);color:var(--blue);font-size:.8rem;font-weight:600;border:1px solid rgba(37,99,235,.15);">
+                <i class="fas fa-calendar-check me-1"></i>{{ check_in }} → {{ check_out }} &nbsp;|&nbsp; {{ guests }} guest(s)
+            </span>
+        {% endif %}
+    </div>
+
+    {% if not rooms %}
+        <div class="text-center py-5 card-premium p-5">
+            <i class="fas fa-bed fa-3x text-muted mb-3 d-block"></i>
+            <h5 class="fw-700">No Rooms Available</h5>
+            <p class="text-muted">No rooms match your search criteria. Try different dates or fewer guests.</p>
+            <a href="{{ url_for('index') }}" class="btn btn-primary-custom mt-2">Reset & Try Again</a>
+        </div>
+    {% else %}
+        <div class="row g-4">
+            {% for room in rooms %}
+            <div class="col-lg-4 col-md-6 animate-fade-in" style="animation-delay: {{ loop.index0 * 0.08 }}s;">
+                <div class="hotel-card">
+                    <div class="hotel-card-img-wrapper">
+                        <img src="{{ room.image_url }}" alt="{{ room.category }}"
+                             onerror="this.src='https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=600&q=80'">
+                        <span class="hotel-card-badge">
+                            <i class="fas fa-user-friends me-1"></i>Max {{ room.max_guests }}
+                        </span>
+                        <span class="hotel-card-ribbon">
+                            <i class="fas fa-star me-1"></i>Premium
+                        </span>
+                    </div>
+                    <div class="hotel-card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="hotel-card-title mb-0">{{ room.category }}</h5>
+                            <div class="text-end">
+                                <div class="hotel-card-price">₹{{ "{:,.0f}".format(room.price_per_night) }}</div>
+                                <small class="text-muted">/night</small>
+                            </div>
+                        </div>
+                        <div class="hotel-card-rating mb-2">
+                            <span class="stars">★★★★★</span>
+                            <span>4.9 (120 reviews)</span>
+                        </div>
+                        <p class="text-muted small mb-3 flex-grow-1" style="line-height:1.7;">{{ room.description }}</p>
+                        <div class="mb-4">
+                            {% for tag in room.amenity_list[:4] %}
+                                <span class="amenity-tag">{{ tag }}</span>
+                            {% endfor %}
+                            {% if room.amenity_list|length > 4 %}
+                                <span class="amenity-tag">+{{ room.amenity_list|length - 4 }} more</span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('room_details', room_id=room.id) }}?check_in={{ check_in or '' }}&check_out={{ check_out or '' }}&guests={{ guests or 2 }}"
+                           class="btn btn-primary-custom w-100 text-center">
+                            View Details & Book
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+<!-- =================== HOW IT WORKS =================== -->
+<section class="how-section">
+    <div class="container position-relative" style="z-index:2;">
+        <div class="text-center mb-5">
+            <p class="section-label" style="color:var(--accent);">System Workflow</p>
+            <h2 style="font-family:'Playfair Display',serif;color:#fff;font-size:2rem;">How The System Works</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-icon-wrap">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h6 class="step-title">1. Registration & Booking</h6>
+                    <p class="step-desc">Users sign up, select available rooms from the database, and make a simulated secure payment.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-icon-wrap">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h6 class="step-title">2. Document Upload</h6>
+                    <p class="step-desc">Customers are required to upload their Aadhaar card image and a clear selfie for security records.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-icon-wrap">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h6 class="step-title">3. Reception Scan</h6>
+                    <p class="step-desc">The admin interface uses OCR and face recognition to compare physical cards against uploaded records.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-icon-wrap">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <h6 class="step-title">4. System Sync</h6>
+                    <p class="step-desc">If verified, the room status changes to Occupied and the customer receives a digital pass.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkinInput  = document.getElementById('check_in');
+    const checkoutInput = document.getElementById('check_out');
+    if (!checkinInput || !checkoutInput) return;
+
+    checkinInput.addEventListener('change', function () {
+        if (this.value) {
+            const d = new Date(this.value);
+            d.setDate(d.getDate() + 1);
+            const minOut = d.toISOString().split('T')[0];
+            checkoutInput.min = minOut;
+            if (!checkoutInput.value || checkoutInput.value <= this.value) {
+                checkoutInput.value = minOut;
+            }
+        }
+    });
+
+    if (checkinInput.value) checkinInput.dispatchEvent(new Event('change'));
+});
+</script>
+{% endblock %}

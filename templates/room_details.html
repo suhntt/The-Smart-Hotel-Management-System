@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}{{ room.category }} – GrandStay{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Rooms</a></li>
+            <li class="breadcrumb-item active">{{ room.category }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- ===== Room Info Column ===== -->
+        <div class="col-lg-8">
+            <!-- Hero Image -->
+            <div class="rounded-xl overflow-hidden shadow-premium mb-4" style="height:420px;">
+                <img src="{{ room.image_url }}" alt="{{ room.category }}" class="w-100 h-100" style="object-fit:cover;"
+                     onerror="this.src='https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=900&q=80'">
+            </div>
+
+            <!-- Info Card -->
+            <div class="card-premium p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                    <div>
+                        <h1 class="fw-800 mb-1" style="font-family:'Playfair Display',serif;font-size:1.9rem;">{{ room.category }}</h1>
+                        <div class="d-flex align-items-center gap-3">
+                            <span style="color:#f59e0b;font-size:.95rem;">★★★★★</span>
+                            <span class="text-muted small">4.9 · 120 reviews</span>
+                            <span class="badge rounded-pill px-3" style="background:rgba(5,150,105,.1);color:var(--success);border:1px solid rgba(5,150,105,.2);font-size:.75rem;">
+                                <i class="fas fa-check-circle me-1"></i>Available
+                            </span>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <span class="text-muted small d-block">Price per night</span>
+                        <span style="font-size:2.2rem;font-weight:800;color:var(--blue);line-height:1.1;">₹{{ "{:,.0f}".format(room.price_per_night) }}</span>
+                        <span class="text-muted small d-block">+ taxes & fees</span>
+                    </div>
+                </div>
+
+                <p class="text-muted mb-4" style="line-height:1.8;">{{ room.description }}</p>
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4 text-center p-3 rounded-lg" style="background:rgba(37,99,235,.04);border:1px solid rgba(37,99,235,.1);">
+                        <i class="fas fa-users text-primary d-block mb-1" style="font-size:1.3rem;"></i>
+                        <span class="fw-700">{{ room.max_guests }}</span>
+                        <span class="text-muted small d-block">Max Guests</span>
+                    </div>
+                    <div class="col-4 text-center p-3 rounded-lg" style="background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.1);">
+                        <i class="fas fa-expand text-accent d-block mb-1" style="font-size:1.3rem;color:var(--accent)!important;"></i>
+                        <span class="fw-700">35 m²</span>
+                        <span class="text-muted small d-block">Room Size</span>
+                    </div>
+                    <div class="col-4 text-center p-3 rounded-lg" style="background:rgba(5,150,105,.04);border:1px solid rgba(5,150,105,.1);">
+                        <i class="fas fa-wifi text-success d-block mb-1" style="font-size:1.3rem;"></i>
+                        <span class="fw-700">Free</span>
+                        <span class="text-muted small d-block">High-Speed Wi-Fi</span>
+                    </div>
+                </div>
+
+                <!-- Amenities -->
+                <h5 class="fw-700 mb-3">Amenities Included</h5>
+                <div class="mb-2">
+                    {% for amenity in room.amenity_list %}
+                    <span class="d-inline-flex align-items-center gap-1 amenity-tag mb-2">
+                        <i class="fas fa-check-circle text-success" style="font-size:.7rem;"></i>{{ amenity }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Aadhaar Info Card -->
+            <div class="card-premium p-4">
+                <h5 class="fw-700 mb-3">
+                    <i class="fas fa-shield-alt text-primary me-2"></i>Aadhaar Verification Required
+                </h5>
+                <p class="text-muted small mb-3" style="line-height:1.8;">
+                    By law, all hotel guests must submit a government-verified ID. GrandStay uses secure, automated digital identity verification to make this process contactless and instant.
+                </p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3 p-3 rounded-lg" style="background:rgba(37,99,235,.04);border:1px solid rgba(37,99,235,.1);">
+                            <i class="fas fa-id-card fa-2x text-primary flex-shrink-0 mt-1"></i>
+                            <div>
+                                <strong class="small">Aadhaar Card Image</strong>
+                                <p class="text-muted small mb-0">Clear front-face photo of your Aadhaar card (PNG/JPG).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex gap-3 p-3 rounded-lg" style="background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.1);">
+                            <i class="fas fa-user-circle fa-2x flex-shrink-0 mt-1" style="color:var(--accent);"></i>
+                            <div>
+                                <strong class="small">Profile Photograph</strong>
+                                <p class="text-muted small mb-0">Clear, front-facing selfie or portrait photograph.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== Booking Sidebar ===== -->
+        <div class="col-lg-4">
+            <div class="booking-sidebar-card">
+                <h4 class="fw-800 mb-1">Reserve This Room</h4>
+                <p class="text-muted small mb-4">Complete the form below to lock in your stay.</p>
+
+                <form action="{{ url_for('book_room', room_id=room.id) }}" method="POST" enctype="multipart/form-data">
+
+                    <!-- Dates -->
+                    <div class="mb-3">
+                        <label for="form-check-in" class="form-label">Check-In Date</label>
+                        <input type="date" class="form-control" id="form-check-in" name="check_in"
+                               value="{{ check_in }}" required
+                               min="{{ today.strftime('%Y-%m-%d') }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="form-check-out" class="form-label">Check-Out Date</label>
+                        <input type="date" class="form-control" id="form-check-out" name="check_out"
+                               value="{{ check_out }}" required>
+                    </div>
+
+                    <!-- Guests -->
+                    <div class="mb-3">
+                        <label for="form-guests" class="form-label">Guests</label>
+                        <select class="form-select" id="form-guests" name="guests">
+                            {% for i in range(1, room.max_guests + 1) %}
+                            <option value="{{ i }}" {% if guests == i %}selected{% endif %}>{{ i }} Guest{{ 's' if i > 1 else '' }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Aadhaar Number -->
+                    <div class="mb-3">
+                        <label for="aadhaar_number" class="form-label">12-Digit Aadhaar Number</label>
+                        <input type="text" class="form-control" id="aadhaar_number" name="aadhaar_number"
+                               placeholder="1234 5678 9012" pattern="\d{12}" minlength="12" maxlength="12" required>
+                        <div class="form-text">Enter your 12-digit Aadhaar UID number.</div>
+                    </div>
+
+                    <!-- File Uploads -->
+                    <div class="mb-3">
+                        <label for="aadhaar_image" class="form-label">Aadhaar Card Image</label>
+                        <input type="file" class="form-control form-control-sm" id="aadhaar_image" name="aadhaar_image"
+                               accept=".jpg,.jpeg,.png" required>
+                        <div class="form-text">JPG / PNG · Max 16 MB</div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="face_image" class="form-label">Your Photograph (Selfie)</label>
+                        <input type="file" class="form-control form-control-sm" id="face_image" name="face_image"
+                               accept=".jpg,.jpeg,.png" required>
+                        <div class="form-text">Clear front-face, good lighting.</div>
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="price-breakdown mb-4">
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">₹{{ "{:,.0f}".format(room.price_per_night) }} × <span id="calc-nights">{{ nights }}</span> night(s)</span>
+                            <span class="fw-600" id="calc-base">₹{{ "{:,.2f}".format(room.price_per_night * nights) }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-2">
+                            <span class="text-muted">Taxes & Fees (12%)</span>
+                            <span class="fw-600" id="calc-tax">₹{{ "{:,.2f}".format(room.price_per_night * nights * 0.12) }}</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-700">Total Amount</span>
+                            <span style="font-size:1.4rem;font-weight:800;color:var(--blue);" id="calc-total">
+                                ₹{{ "{:,.2f}".format(total_amount) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if current_user.is_authenticated %}
+                        <button type="submit" class="btn btn-primary-custom w-100 py-3 fw-700">
+                            <i class="fas fa-lock me-2"></i>Confirm Booking & Pay
+                        </button>
+                        <p class="text-center text-muted small mt-2 mb-0">
+                            <i class="fas fa-shield-alt me-1 text-success"></i>Secure · Encrypted · Instant
+                        </p>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="btn btn-secondary-custom w-100 py-3 fw-700 text-center">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In to Book
+                        </a>
+                        <p class="text-center text-muted small mt-2 mb-0">
+                            <a href="{{ url_for('login') }}?tab=register" class="text-primary">Register for free</a> to unlock booking
+                        </p>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const inInput   = document.getElementById('form-check-in');
+    const outInput  = document.getElementById('form-check-out');
+    const nightsEl  = document.getElementById('calc-nights');
+    const baseEl    = document.getElementById('calc-base');
+    const taxEl     = document.getElementById('calc-tax');
+    const totalEl   = document.getElementById('calc-total');
+
+    const pricePerNight = {{ room.price_per_night }};
+    const taxRate = 0.12;
+
+    function fmt(n) {
+        return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updatePricing() {
+        if (!inInput.value || !outInput.value) return;
+        const d1 = new Date(inInput.value);
+        const d2 = new Date(outInput.value);
+        if (d2 <= d1) return;
+        const nights  = Math.ceil((d2 - d1) / 86400000);
+        const base    = nights * pricePerNight;
+        const tax     = base * taxRate;
+        const total   = base + tax;
+        nightsEl.textContent = nights;
+        baseEl.textContent   = fmt(base);
+        taxEl.textContent    = fmt(tax);
+        totalEl.textContent  = fmt(total);
+    }
+
+    inInput.addEventListener('change', function () {
+        if (this.value) {
+            const d = new Date(this.value);
+            d.setDate(d.getDate() + 1);
+            const minOut = d.toISOString().split('T')[0];
+            outInput.min = minOut;
+            if (!outInput.value || outInput.value <= this.value) outInput.value = minOut;
+        }
+        updatePricing();
+    });
+
+    outInput.addEventListener('change', updatePricing);
+
+    if (inInput.value) inInput.dispatchEvent(new Event('change'));
+});
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Manage Bookings - GrandStay Staff{% endblock %}
+{% block section_title %}Room Booking Logs{% endblock %}
+
+{% block admin_content %}
+<div class="card border-0 shadow-sm p-4 bg-white">
+    <h5 class="fw-bold mb-4">All Active Room Bookings</h5>
+    
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr class="table-light small">
+                    <th>ID</th>
+                    <th>Customer Details</th>
+                    <th>Room Assigned</th>
+                    <th>Check In/Out</th>
+                    <th>Aadhaar Number</th>
+                    <th>Payment</th>
+                    <th>Check-In Status</th>
+                    <th class="text-end">Verification</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr class="small">
+                        <td>#{{ booking.id }}</td>
+                        <td>
+                            <strong>{{ booking.user.name }}</strong>
+                            <span class="d-block text-muted" style="font-size: 0.75rem;">{{ booking.user.email }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ booking.room.category }}</strong>
+                            <span class="d-block text-muted" style="font-size: 0.75rem;">₹{{ "{:,.0f}".format(booking.total_amount) }} Total</span>
+                        </td>
+                        <td>
+                            <span class="d-block">In: {{ booking.check_in_date }}</span>
+                            <span class="d-block text-muted" style="font-size: 0.75rem;">Out: {{ booking.check_out_date }}</span>
+                        </td>
+                        <td>
+                            <code>{{ booking.aadhaar_record.aadhaar_number if booking.aadhaar_record else 'Not Registered' }}</code>
+                        </td>
+                        <td>
+                            {% if booking.payment_status == 'Paid' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Paid</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Unpaid</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if booking.status == 'Checked-in' %}
+                                <span class="badge bg-success"><i class="fas fa-door-open me-1"></i>Checked-in</span>
+                            {% elif booking.status == 'Checked-out' %}
+                                <span class="badge bg-secondary">Checked-out</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border">Booked</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if booking.status == 'Booked' %}
+                                <a href="{{ url_for('admin_checkin_verify_page', booking_id=booking.id) }}" class="btn btn-sm btn-primary-custom">
+                                    <i class="fas fa-camera me-1"></i>Verify Check-In
+                                </a>
+                            {% elif booking.status == 'Checked-in' %}
+                                <form action="{{ url_for('admin_checkout_booking', booking_id=booking.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to check out this guest? This will mark the room as Available again.');">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Check-Out
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="text-muted small">Closed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

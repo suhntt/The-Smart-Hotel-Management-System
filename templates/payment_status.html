@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Status - GrandStay{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            
+            {% if status == 'success' %}
+                <!-- Success State -->
+                <div class="card border-0 shadow-lg rounded-4 p-5 bg-white">
+                    <div class="fs-1 text-success mb-3"><i class="fas fa-check-circle fa-2x animate-bounce"></i></div>
+                    <h3 class="fw-bold mb-2">Payment Successful!</h3>
+                    <p class="text-secondary small mb-4">Your transaction was processed successfully. Booking references are updated in your dashboard database.</p>
+                    
+                    <div class="card bg-light border-0 p-4 mb-4 rounded-3 text-start small">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Service:</span>
+                            <strong class="text-slate-900">{{ details.title }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Description:</span>
+                            <strong class="text-slate-900">{{ details.item_name }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Transaction Reference:</span>
+                            <strong class="text-slate-900">#{{ details.id }}</strong>
+                        </div>
+                        <hr class="my-2 border-secondary">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Amount Paid:</span>
+                            <strong class="fs-5 text-primary">₹{{ "{:,.2f}".format(details.amount) }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {% if service_type == 'RoomBooking' %}
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-primary-custom py-2.5 fw-bold">
+                                View Booking in Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('track_food_order', order_id=details.id) }}" class="btn btn-primary-custom py-2.5 fw-bold">
+                                Track Food Delivery Order
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary-custom py-2.5">
+                            Return to Home
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Failure State -->
+                <div class="card border-0 shadow-lg rounded-4 p-5 bg-white">
+                    <div class="fs-1 text-danger mb-3"><i class="fas fa-times-circle fa-2x"></i></div>
+                    <h3 class="fw-bold mb-2">Payment Failed</h3>
+                    <p class="text-secondary small mb-4">We were unable to process your transaction. If money was deducted, it will be refunded automatically by your bank.</p>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('checkout', service_type=service_type, item_id=details.id) }}" class="btn btn-danger py-2.5 fw-bold text-light">
+                            Retry Payment
+                        </a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary-custom py-2.5">
+                            Return to Home
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

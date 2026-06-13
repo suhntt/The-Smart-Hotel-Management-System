@@ -1,0 +1,57 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Manage Payments - GrandStay Staff{% endblock %}
+{% block section_title %}Financial Transaction Logs{% endblock %}
+
+{% block admin_content %}
+<div class="card border-0 shadow-sm p-4 bg-white">
+    <h5 class="fw-bold mb-4">Secure Payment Transaction Directory</h5>
+    
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr class="table-light small">
+                    <th>ID</th>
+                    <th>Service Type</th>
+                    <th>Reference ID</th>
+                    <th>Razorpay Order ID</th>
+                    <th>Razorpay Payment ID</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                    <tr class="small">
+                        <td>#{{ payment.id }}</td>
+                        <td>
+                            <strong>{{ 'Room Booking' if payment.service_type == 'RoomBooking' else 'Food Order' }}</strong>
+                        </td>
+                        <td>
+                            {% if payment.service_type == 'RoomBooking' %}
+                                Booking #{{ payment.booking_id }}
+                            {% else %}
+                                Food Order #{{ payment.food_order_id }}
+                            {% endif %}
+                        </td>
+                        <td><code>{{ payment.order_id }}</code></td>
+                        <td><code>{{ payment.payment_id or 'Pending' }}</code></td>
+                        <td><strong>₹{{ "{:,.2f}".format(payment.amount) }}</strong></td>
+                        <td>
+                            {% if payment.status == 'Captured' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Captured</span>
+                            {% elif payment.status == 'Failed' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Failed</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ payment.created_at.strftime('%d-%m-%Y %H:%M') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
